@@ -87,6 +87,8 @@ $(bit): $(romgen) $(f)
 		-ip-vivado-tcls "$(shell find '$(BUILD_DIR)' -name '*.vivado.tcl')" \
 		-board "$(BOARD)"
 
+.PHONY: bit
+bit: $(bit)
 
 # Build .mcs
 mcs := $(BUILD_DIR)/obj/$(MODEL).mcs
