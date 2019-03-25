@@ -62,8 +62,8 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
   val dtbrom = LazyModule(new TLROM(0x2ff0000000L, 0x10000, dtb.contents, executable = false, beatBytes = 8))
   val msimaster = LazyModule(new MSIMaster(Seq(MSITarget(address=0x2020000, spacing=4, number=10))))
   // We only support the first DDR or PCIe controller in this design
-  val ddr = p(DDROverlayKey).headOption.map(_(DDROverlayParams(0x3000000000L, wrangler.node)))
-  val pcieControllers = p(PCIeOverlayKey).size
+  //val ddr = p(DDROverlayKey).headOption.map(_(DDROverlayParams(0x3000000000L, wrangler.node)))
+  /*val pcieControllers = p(PCIeOverlayKey).size
   val lowBarSize = if (pcieControllers == 1) 0x20000000 else 0x10000000
   val pcieAddrs = Seq(
     (0x2c00000000L, Seq(AddressSet(0x2000000000L, 0x3ffffffffL), AddressSet(0x40000000, lowBarSize-1))),
@@ -72,6 +72,7 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
   val (pcie, pcieInt) = p(PCIeOverlayKey).zipWithIndex.map { case (overlay, i) =>
     pcieAddrs(i) match { case (ecam, bars) => overlay(PCIeOverlayParams(wrangler.node, bars, ecam)) }
   }.unzip
+  */
   // We require ChipLink, though, obviously
   val link = p(ChipLinkOverlayKey).head(ChipLinkOverlayParams(
     params   = chiplinkparams,
@@ -84,7 +85,7 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
 
   // local master Xbar
   mbar.node := msimaster.masterNode
-  pcie.foreach { n => mbar.node := FlipRendering { implicit p => TLFIFOFixer() := n } }
+  //pcie.foreach { n => mbar.node := FlipRendering { implicit p => TLFIFOFixer() := n } }
 
   // Tap traffic for progress LEDs
   val iTap = TLIdentityNode()
@@ -111,15 +112,15 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
   // local slave Xbar
   serr.node := sbar.node
   dtbrom.node := TLFragmenter(8, 64) := sbar.node
-  if (ddr.isEmpty) {
+  //if (ddr.isEmpty) {
     val sram = LazyModule(new TLRAM(AddressSet(0x2f90000000L, 0xfff), beatBytes = 8))
     sram.node := TLFragmenter(8, 64) := sbar.node
-  }
-  ddr.foreach { _ := sbar.node }
-  pcie.foreach { _ :*= TLWidthWidget(8) :*= sbar.node }
+  //}
+  //ddr.foreach { _ := sbar.node }
+  //pcie.foreach { _ :*= TLWidthWidget(8) :*= sbar.node }
 
   // interrupts are fed into chiplink via MSI
-  pcieInt.foreach { msimaster.intNode := _ }
+  //pcieInt.foreach { msimaster.intNode := _ }
 
   // Include optional NVDLA config
   val nvdla = p(NVDLAKey).map { config =>
@@ -128,7 +129,7 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
     val dlaClock = ClockSinkNode(freqMHz = 400.0/3)
     dlaClock := wrangler.node := dlaGroup := corePLL
 
-    FlipRendering { implicit p => mbar.node := TLFIFOFixer() } := TLWidthWidget(8) := nvdla.crossTLOut(nvdla.dbb_tl_node)
+    FlipRendering { implicit p => mbar.node := TLFIFOFixer() } := TLWidthWidget(32) := nvdla.crossTLOut(nvdla.dbb_tl_node)
     nvdla.crossTLIn(nvdla.cfg_tl_node := nvdla { TLFragmenter(4, 64) := TLWidthWidget(8) }) := sbar.node
     msimaster.intNode := nvdla.crossIntOut(nvdla.int_node)
 
@@ -225,6 +226,7 @@ class With100MHz extends WithFrequency(100)
 class With125MHz extends WithFrequency(125)
 class With150MHz extends WithFrequency(150)
 class With200MHz extends WithFrequency(200)
+class WithCustomMHz extends WithFrequency(225)
 
 class WithNVDLA(config: String) extends Config((site, here, up) => {
   case NVDLAKey => Some(NVDLAParams(config = config, raddress = 0x2f80000000L))
