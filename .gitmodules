@@ -9,4 +9,4 @@
 	url = https://github.com/sifive/fpga-shells
 [submodule "nvidia-dla-blocks"]
 	path = nvidia-dla-blocks
-	url = https://github.com/sifive/nvidia-dla-blocks.git
+	url = https://github.com/farzadfch/nvidia-dla-blocks.git

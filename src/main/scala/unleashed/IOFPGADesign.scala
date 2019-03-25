@@ -121,6 +121,8 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
   // interrupts are fed into chiplink via MSI
   pcieInt.foreach { msimaster.intNode := _ }
 
+  val jt = p(JTAGDebugOverlayKey).headOption.map(_(JTAGDebugOverlayParams())).get
+
   // Include optional NVDLA config
   val nvdla = p(NVDLAKey).map { config =>
     val nvdla = LazyModule(new NVDLA(config))
@@ -212,6 +214,10 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
       val trafficLED = Cat(Seq.tabulate(width) { i => traffic(i*stride) }.reverse)
       val resetLED = Cat(wrangler.module.status, toggle)
       leds := Mux(core.reset, resetLED, trafficLED)
+    }
+
+    nvdla.foreach { nvdla =>
+      nvdla.module.io <> jt
     }
   }
 }
