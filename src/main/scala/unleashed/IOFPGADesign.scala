@@ -217,7 +217,7 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
     }
 
     nvdla.foreach { nvdla =>
-      nvdla.module.io <> jt
+      jt <> nvdla.module.io
     }
   }
 }
