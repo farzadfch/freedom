@@ -129,7 +129,7 @@ class IOFPGADesign()(implicit p: Parameters) extends LazyModule with BindingScop
     val dlaClock = ClockSinkNode(freqMHz = 400.0/3)
     dlaClock := wrangler.node := dlaGroup := corePLL
 
-    FlipRendering { implicit p => mbar.node := TLFIFOFixer() } := TLWidthWidget(32) := nvdla.crossTLOut(nvdla.dbb_tl_node)
+    FlipRendering { implicit p => mbar.node := TLFIFOFixer() } := TLWidthWidget(8) := nvdla.crossTLOut(nvdla.dbb_tl_node)
     nvdla.crossTLIn(nvdla.cfg_tl_node := nvdla { TLFragmenter(4, 64) := TLWidthWidget(8) }) := sbar.node
     msimaster.intNode := nvdla.crossIntOut(nvdla.int_node)
 
