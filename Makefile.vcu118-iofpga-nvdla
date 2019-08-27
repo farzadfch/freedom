@@ -5,7 +5,7 @@ FPGA_DIR := $(base_dir)/fpga-shells/xilinx
 PROJECT := sifive.fpgashells.shell.xilinx
 MODEL := VCU118Shell
 export CONFIG_PROJECT := sifive.freedom.unleashed
-export CONFIG := IOFPGAConfig_With200MHz_WithNVDLALarge
+export CONFIG := IOFPGAConfig_With200MHz_WithNVDLASmall
 export BOARD := vcu118
 
 rocketchip_dir := $(base_dir)/rocket-chip
@@ -18,6 +18,6 @@ VSRCS := \
 	$(FPGA_DIR)/common/vsrc/PowerOnResetFPGAOnly.v \
 	$(sifiveblocks_dir)/vsrc/SRLatch.v \
 	$(BUILD_DIR)/$(CONFIG_PROJECT).$(CONFIG).v \
-	$(NVDLA_LARGE_VSRCS)
+	$(NVDLA_SMALL_VSRCS)
 
 include common.mk
