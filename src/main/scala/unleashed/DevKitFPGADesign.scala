@@ -22,6 +22,8 @@ import sifive.blocks.devices.uart._
 import sifive.blocks.devices.gpio._
 import sifive.blocks.devices.pinctrl.{BasePin}
 
+import nvidia.blocks.dla._
+
 import sifive.fpgashells.shell._
 import sifive.fpgashells.clocks._
 
@@ -67,6 +69,7 @@ case object DevKitFPGAFrequencyKey extends Field[Double](100.0)
 class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) extends RocketSubsystem
     with HasPeripheryMaskROMSlave
     with HasPeripheryDebug
+    with HasPeripheryNVDLA
 {
   // Error device used for testing and to NACK invalid front port transactions
   val error = LazyModule(new TLError(p(ErrorDeviceKey), sbus.beatBytes))
@@ -108,13 +111,13 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) e
   }
 
   // hook the first PCIe the board has
-  val pcies = p(PCIeOverlayKey).headOption.map(_(PCIeOverlayParams(wranglerNode)))
-  pcies.zipWithIndex.map { case((pcieNode, pcieInt), i) =>
-    val pciename = Some(s"pcie_$i")
-    sbus.fromMaster(pciename) { pcieNode }
-    sbus.toFixedWidthSlave(pciename) { pcieNode }
-    ibus.fromSync := pcieInt
-  }
+  //val pcies = p(PCIeOverlayKey).headOption.map(_(PCIeOverlayParams(wranglerNode)))
+  //pcies.zipWithIndex.map { case((pcieNode, pcieInt), i) =>
+  //  val pciename = Some(s"pcie_$i")
+  //  sbus.fromMaster(pciename) { pcieNode }
+  //  sbus.toFixedWidthSlave(pciename) { pcieNode }
+  //  ibus.fromSync := pcieInt
+  //}
 
   // LEDs / GPIOs
   val gpioParams = p(PeripheryGPIOKey)
